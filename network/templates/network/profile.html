@@ -1,11 +1,11 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-<div class="container mt-5">
+<div class="container col-8 mt-5">
     <h2 class="display-4">@{{ username }}</h2>
 </div>
 
-<div class="container">
+<div class="container col-8">
     <div class="row d-flex justified-content-center">
         <h3 class="col-4">Followers: {{ followers.count }}</h3>
         <h3 class="col-4">Following: {{ following.count }}</h3>
@@ -30,9 +30,9 @@
 </div>
 
 <!-- Posts list - card view -->
-<div class="container">
+<div class="container col-8">
     {% for post in pagePosts %}
-        <div class="card mt-2 mb-2">
+        <div class="card mt-2 mb-4">
             <h5 class="card-header">
                 <a href="{% url 'profile' user_id=post.creator.id %}" style="text-decoration: none;">@{{ post.creator }}</a>
             </h5>
@@ -40,6 +40,41 @@
                 <p class="card-text" id="content{{ post.id }}">
                     {{ post.content }}
                 </p>
+                {% if user.is_authenticated %}
+                        {% if user == post.creator %}
+                            <!-- Button trigger modal -->               
+                            <a action="editPost" class="position-absolute top-0 end-0 jump-icon btn btn-link" style="text-decoration: none;" data-toggle="modal" data-target="#editPostModal{{ post.id }}">
+                                <span>Edit</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                </svg>
+                            </a>
+                            <!-- Modal -->
+                            <div class="modal fade" id="editPostModal{{ post.id }}" tabindex="-1" role="dialog"
+                                aria-labelledby="editPostModal{{ post.id }}Label"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="editPostModal{{ post.id }}">Edit Post</h5>
+                                            <button type="button" class="close-modal" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <textarea class="form-control" name="content" rows="5" cols="100" id="textArea{{ post.id }}" aria-label="Edit Post">{{ post.content }}</textarea>
+                                        </div>
+                                        <hr class="hr-custom-style">
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary shadow-sm" data-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary shadow-sm" onclick="submitEdit({{ post.id }})">Save changes</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
             </div>
             <div class="card-footer">
                 <!-- Post info -->
