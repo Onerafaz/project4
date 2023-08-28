@@ -1,0 +1,161 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container col-8 mt-5">
+        <h2 class="display-4">All Posts</h2>
+    </div>
+
+    <!-- Add New Post section -->
+    <!-- New Post -->
+    {% if user.is_authenticated %}
+    <div class="container col-8 mt-2 mb-4">
+        <!-- Button to Open Modal -->
+        <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#newPostModal">
+            New Post
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="newPostModal" tabindex="-1" role="dialog" aria-labelledby="newPostModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newPostModalLabel">New Post</h5>
+                        <button type="button" class="close-modal" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- New Post Form -->
+                        <form action="{% url 'newPost' %}" method="POST">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="newPost">Write your new post</label>
+                                <textarea class="form-control" name="content" rows="5" cols="100" aria-label="Add a Post"></textarea>
+                            </div>
+                            <hr class="hr-custom-style">
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <input type="submit" value="Post" class="btn btn-primary">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+
+    <!-- Posts list - card view -->
+    <div class="container col-8">
+        {% for post in pagePosts %}
+            <div class="card mt-2 mb-4">
+                <h5 class="card-header">
+                    <a href="{% url 'profile' user_id=post.creator.id %}" style="text-decoration: none;">@{{ post.creator }}</a>
+                </h5>
+                <div class="card-body">
+                    <p class="card-text" id="content{{ post.id }}">
+                        {{ post.content }}
+                    </p>
+                    {% if user.is_authenticated %}
+                        {% if user == post.creator %}
+                            <!-- Button trigger modal -->               
+                            <a action="editPost" class="position-absolute top-0 end-0 jump-icon btn btn-link" style="text-decoration: none;" data-toggle="modal" data-target="#editPostModal{{ post.id }}">
+                                <span>Edit</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                </svg>
+                            </a>
+                            <!-- Modal -->
+                            <div class="modal fade" id="editPostModal{{ post.id }}" tabindex="-1" role="dialog"
+                                aria-labelledby="editPostModal{{ post.id }}Label"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="editPostModal{{ post.id }}">Edit Post</h5>
+                                            <button type="button" class="close-modal" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <textarea class="form-control" name="content" rows="5" cols="100" id="textArea{{ post.id }}" aria-label="Edit Post">{{ post.content }}</textarea>
+                                        </div>
+                                        <hr class="hr-custom-style">
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary shadow-sm" data-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary shadow-sm" onclick="submitEdit({{ post.id }})">Save changes</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <!-- Post info -->
+                    <small class="text-muted-custom">{{ post.created_at }}</small><br>
+                    <small class="text-muted-custom">
+                        {% if user.is_authenticated %}
+                        {% if user != post.creator %}
+                        Likes: <span id="likes-count-{{ post.id }}" class="likes-count{{ post.id }}"><strong>{{ post.postLike.count }}</strong></span>
+                            <a
+                                onclick="postLike({{ post.id }}, {{ whoYouLiked|safe }})"
+                                id="{{ post.id }}"
+                                class="btn btn-link like-button {% if post.id in whoYouLiked %}liked{% endif %}"
+                                data-liked="{% if post.id in whoYouLiked %}true{% else %}false{% endif %}"
+                                data-who-you-liked="{{ whoYouLiked|safe }}"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"></path>
+                                </svg>
+                            </a>
+                            {% endif %}
+                        {% endif %}
+                    </small>
+                    </br>
+                    <a href="#" class="btn btn-primary">Comment</a>
+                    <!-- Comments -->
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for comment in allComments %}
+                        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Posted by: <strong>{{ comment.author }}</strong></h5>
+                                <small>{{ comment.created_at|date:'M. d, Y, P' }}</small>
+                            </div>
+                            <p class="mb-1">{{ comment.message }}</p>
+                            <small class="text-muted-custom" data-created="{{ comment.created_at|date:'U' }}"></small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginator -->
+    <div class="container">
+        <nav aria-label="PageNavigator">
+            <ul class="pagination d-flex justify-content-center">
+                {% if pagePosts.has_previous %}    
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ pagePosts.previous_page_number }}">
+                        Previous
+                    </a>
+                </li>
+                {% endif %}
+                {% if pagePosts.has_next %}    
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ pagePosts.next_page_number }}">
+                        Next
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endblock %}

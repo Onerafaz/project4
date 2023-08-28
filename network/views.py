@@ -1,0 +1,265 @@
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db import IntegrityError
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
+from django.urls import reverse
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.http import JsonResponse
+import json
+
+
+from .models import User, Like, Post, Comment, Follow
+
+
+def index(request):
+    posts = Post.objects.all().order_by("created_at").reverse()
+    
+    # Pagination
+    paginator = Paginator(posts, 10)
+    pageNumber = request.GET.get('page')
+    pagePosts = paginator.get_page(pageNumber)
+    
+    whoYouLiked = []
+
+    if request.user.is_authenticated:
+        likes = Like.objects.filter(user=request.user)
+        whoYouLiked = [like.post.id for like in likes]
+
+    return render(request, "network/index.html", {
+        "posts": posts,
+        "whoYouLiked": whoYouLiked,
+        "pagePosts": pagePosts
+    })
+
+
+def login_view(request):
+    if request.method == "POST":
+
+        # Attempt to sign user in
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
+
+        # Check if authentication successful
+        if user is not None:
+            login(request, user)
+            return HttpResponseRedirect(reverse("index"))
+        else:
+            return render(request, "network/login.html", {
+                "message": "Invalid username and/or password."
+            })
+    else:
+        return render(request, "network/login.html")
+
+
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(reverse("index"))
+
+
+def register(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        email = request.POST["email"]
+
+        # Ensure password matches confirmation
+        password = request.POST["password"]
+        confirmation = request.POST["confirmation"]
+        if password != confirmation:
+            return render(request, "network/register.html", {
+                "message": "Passwords must match."
+            })
+
+        # Attempt to create new user
+        try:
+            user = User.objects.create_user(username, email, password)
+            user.save()
+        except IntegrityError:
+            return render(request, "network/register.html", {
+                "message": "Username already taken."
+            })
+        login(request, user)
+        return HttpResponseRedirect(reverse("index"))
+    else:
+        return render(request, "network/register.html")
+
+@login_required
+def new_post(request):
+    current_user = request.user
+
+    # Create a new post
+    if request.method == "POST":
+        content = request.POST["content"]
+        
+        
+        new_post = Post(
+            creator = current_user,
+            content = content
+        )
+        
+        # Save the post into DB
+        new_post.save()
+                
+        return HttpResponseRedirect(reverse(index))
+
+
+def posts(request, id): 
+    # Display user, posts, comments and likes
+    isCreator = request.user.username == postData.creator.username
+    postData = Post.objects.get(pk=id)
+    allComments = Comment.objects.filter(post=postData)
+    likes_count = Like.objects.filter(post=postData).count()
+    
+    whoYouLiked = []  # Initialize the list
+
+    # Check if the user is authenticated before calculating likes
+    if request.user.is_authenticated:
+        likes_by_user = Like.objects.filter(post=postData, user=request.user)
+        whoYouLiked = [like.post.id for like in likes_by_user]
+                    
+    return render(request, "network/posts.html", {
+        "posts": postData,
+        "isCreator": isCreator,
+        "allComments": allComments,
+        "likes": likes_count,
+        "whoYouLiked": whoYouLiked
+    })
+    
+    
+def like(request, id):
+    if request.method == "POST":
+        like = request.POST["addLike"]
+        
+        return like
+
+
+def profile(request, user_id):
+    user = User.objects.get(pk=user_id)
+    posts = Post.objects.filter(creator=user).order_by("id").reverse()
+    
+    # Pagination
+    paginator = Paginator(posts, 10)
+    pageNumber = request.GET.get('page')
+    pagePosts = paginator.get_page(pageNumber)
+    
+    # Followers
+    following = Follow.objects.filter(user=user)
+    followers = Follow.objects.filter(user_follower=user)
+    
+    # Following others and not own
+    try:
+        checkFollow = followers.filter(user=User.objects.get(pk=request.user.id))
+        if len(checkFollow) != 0:
+            isFollowing= True
+        else:
+            isFollowing = False
+    except:
+        isFollowing = False
+    
+    return render(request, "network/profile.html", {
+        "posts": posts,
+        "pagePosts": pagePosts,
+        "username": user.username,
+        "following": following,
+        "followers": followers,
+        "isFollowing": isFollowing,
+        "user_profile": user
+    })
+
+
+@login_required
+def follow(request):
+    userfollow = request.POST["userfollow"]
+    current_user = request.user
+    userfollowData = User.objects.get(username=userfollow)
+    f = Follow(user=current_user, user_follower=userfollowData)
+    f.save()
+    user_id =userfollowData.id
+    return HttpResponseRedirect(reverse(profile, kwargs={"user_id": user_id}))
+
+@login_required
+def unfollow(request):
+    userfollow = request.POST["userfollow"]
+    current_user = request.user
+    userfollowData = User.objects.get(username=userfollow)
+    f = Follow.objects.get(user=current_user, user_follower=userfollowData)
+    f.delete()
+    user_id =userfollowData.id
+    return HttpResponseRedirect(reverse(profile, kwargs={"user_id": user_id}))
+
+
+def following(request):
+    current_user = User.objects.get(pk=request.user.id)
+    followingPeople = Follow.objects.filter(user=current_user)
+    allPosts = Post.objects.all().order_by("id").reverse()
+    
+    followingPosts = []
+    
+    whoYouLiked = []
+
+    if request.user.is_authenticated:
+        likes = Like.objects.filter(user=request.user)
+        whoYouLiked = [like.post.id for like in likes]
+    
+    for post in allPosts:
+        for person in followingPeople:
+            if person.user_follower == post.creator:
+                followingPosts.append(post)
+                
+    # Pagination
+    paginator = Paginator(followingPosts, 10)
+    page_number = request.GET.get("page")
+    pagePosts = paginator.get_page(page_number)
+    
+    return render(request, "network/following.html", {
+        "pagePosts": pagePosts,
+        "whoYouLiked": whoYouLiked,        
+    })
+
+   
+@login_required    
+def edit(request, post_id):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        editPost = Post.objects.get(pk=post_id)
+        editPost.content = data["content"]
+        editPost.save()
+        return JsonResponse({"message": "Change Successful", "data": data["content"]})
+        
+@login_required
+def removeLike(request, post_id):
+    post = Post.objects.get(pk=post_id)
+    user = request.user
+    likes_count = Like.objects.filter(post=post).count()  # Corrected variable name
+
+    try:
+        like = Like.objects.get(user=user, post=post)
+        like.delete()
+        likes_count -= 1  # Decrement the likes_count
+        return JsonResponse({"message": "Like removed", "likes_count": likes_count})
+    except Like.DoesNotExist:
+        return JsonResponse({"message": "Like not found", "likes_count": likes_count}, status=400)
+
+
+@login_required
+def addLike(request, post_id):
+    post = Post.objects.get(pk=post_id)
+    user = request.user
+    likes_count = Like.objects.filter(post=post).count()
+
+    # Check if a like already exists for the user and post
+    existing_like = Like.objects.filter(user=user, post=post).first()
+
+    if existing_like:
+        return JsonResponse({"message": "Like already exists", "likes_count": likes_count}, status=400)
+
+    # If the like doesn't exist, create a new one
+    newLike = Like(user=user, post=post)
+    newLike.save()
+
+    likes_count += 1  # Increment the likes_count
+    return JsonResponse({"message": "Like added", "likes_count": likes_count})
