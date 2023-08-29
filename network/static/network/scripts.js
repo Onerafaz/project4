@@ -11,7 +11,37 @@ document.addEventListener("DOMContentLoaded", function() {
             postLike(postId, isLiked, likesCount);
         });
     });
+
 });
+
+// JavaScript to handle the search functionality
+document.getElementById("search-button").addEventListener("click", function() {
+    performSearch();
+});
+
+document.getElementById("search-input").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        performSearch();
+    }
+});
+
+function performSearch() {
+    const searchQuery = document.getElementById("search-input").value;
+    window.location.href = `/search/?q=${encodeURIComponent(searchQuery)}`;
+    highlight(searchQuery);
+}
+
+function highlight(param) {
+    var comments = document.querySelectorAll(".comment-message"); // Target the comment message elements
+    comments.forEach(comment => {
+        var ob = new Mark(comment);
+        ob.unmark();
+        ob.mark(param, { className: 'highlighted' });
+    });
+}
+
+
+
 
 // Handle the edit post and hide modal refreshing HTML asynchronously
 function getCookie(name) {
@@ -41,7 +71,7 @@ function submitEdit(id) {
         // get modal backdrops
         const modalsBackDrops = document.getElementsByClassName('modal-backdrop');
 
-        //remove every modal backdrop
+        // remove every modal backdrop
         for(let i = 0; i < modalsBackDrops.length; i ++) {
             document.body.removeChild(modalsBackDrops[i]);
         }

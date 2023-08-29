@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -17,6 +18,8 @@ class Post(models.Model):
 class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="userComment")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, blank=True, null=True, related_name="postComment")
+    message = models.CharField(max_length=200)
+    created_at = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
         return f"{self.author} commented on {self.post}"

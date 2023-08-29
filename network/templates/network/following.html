@@ -1,12 +1,12 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <div class="container col-8 mt-5">
+    <div class="container col-6 mt-5">
         <h2 class="display-4">My Feed</h2>
     </div>
 
 <!-- Posts list - card view -->
-<div class="container col-8">
+<div class="container col-6">
     {% for post in pagePosts %}
         <div class="card mt-2 mb-4">
             <h5 class="card-header">
@@ -20,10 +20,10 @@
             <div class="card-footer">
                 <!-- Post info -->
                 <small class="text-muted-custom">{{ post.created_at }}</small><br>
-                <small class="text-muted-custom">
-                    {% if user.is_authenticated %}
+                <small class="text-muted-custom"></small></br>
+                Likes: <span id="likes-count-{{ post.id }}" class="likes-count{{ post.id }}"><strong>{{ post.postLike.count }}</strong></span>
+                {% if user.is_authenticated %}
                     {% if user != post.creator %}
-                    Likes: <span id="likes-count-{{ post.id }}" class="likes-count{{ post.id }}"><strong>{{ post.postLike.count }}</strong></span>
                         <a
                             onclick="postLike({{ post.id }}, {{ whoYouLiked|safe }})"
                             id="{{ post.id }}"
@@ -35,25 +35,38 @@
                                 <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"></path>
                             </svg>
                         </a>
-                        {% endif %}
                     {% endif %}
-                </small>
-                </br>
-                <a href="#" class="btn btn-primary">Comment</a>
-                <!-- Comments -->
+                {% endif %}
             </div>
+            <!-- Comments Section -->
             <div class="card-body">
-                <div class="list-group">
-                    {% for comment in allComments %}
-                    <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">Posted by: <strong>{{ comment.author }}</strong></h5>
-                            <small>{{ comment.created_at|date:'M. d, Y, P' }}</small>
+                <div class="card content-center mt-2 mb-2">
+                    <!-- Add Comment form -->
+                    <form action="{% url 'addComment' id=post.id %}" method="POST">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <div class="input-group">
+                                <textarea class="form-control" name="newComment" id="addComment" rows="1" placeholder="Add a comment"></textarea>
+                                <button type="submit" class="input-group-append btn btn-primary shadow-sm">Comment</button>
+                            </div>
                         </div>
-                        <p class="mb-1">{{ comment.message }}</p>
-                        <small class="text-muted-custom" data-created="{{ comment.created_at|date:'U' }}"></small>
-                    </a>
-                    {% endfor %}
+                    </form>
+                    <!-- Display Comments -->
+                    <div class="container content-center m-2"
+                        {% if not post.postComment.all %}
+                            style="display: none;"
+                        {% endif %}>
+                        <div class="text-muted-custom">
+                            {% for comment in post.postComment.all reversed %}
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <small class="text-muted-custom">Posted by: <strong>{{ comment.author }}</strong></small>
+                                        <small class="text-muted-custom">{{ comment.created_at|date:'M. d, Y, P' }}</small>
+                                    </div>
+                                <p class="mb-1">{{ comment.message }}</p>
+                                <small class="text-muted" data-created="{{ comment.created_at|date:'U' }}"></small>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

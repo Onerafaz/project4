@@ -1,55 +1,14 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <div class="container col-6 mt-5">
-        <h2 class="display-4">All Posts</h2>
-    </div>
+<div class="container col-6 mt-5">
 
-    <!-- Add New Post section -->
-    <!-- New Post -->
-    {% if user.is_authenticated %}
-        <div class="container col-6 mt-2 mb-4">
-            <!-- Button to Open Modal -->
-            <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#newPostModal">
-                New Post
-            </button>
-
-            <!-- Modal -->
-            <div class="modal fade" id="newPostModal" tabindex="-1" role="dialog" aria-labelledby="newPostModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="newPostModalLabel">New Post</h5>
-                            <button type="button" class="close-modal" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <!-- New Post Form -->
-                            <form action="{% url 'newPost' %}" method="POST">
-                                {% csrf_token %}
-                                <div class="form-group">
-                                    <label for="newPost">Write your new post</label>
-                                    <textarea class="form-control" name="content" rows="5" cols="100" aria-label="Add a Post"></textarea>
-                                </div>
-                                <hr class="hr-custom-style">
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                    <input type="submit" value="Post" class="btn btn-primary">
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endif %}
-
-
+    <h2 class="display-4">Search Results for "{{ query }}"</h2>
+</div>
 
     <!-- Posts list - card view -->
     <div class="container col-6">
-        {% for post in pagePosts %}
+        {% for post in posts %}
             <div class="card mt-2 mb-4">
                 <h5 class="card-header">
                     <a href="{% url 'profile' user_id=post.creator.id %}" style="text-decoration: none;">@{{ post.creator }}</a>
@@ -114,11 +73,10 @@
                                 </a>
                             {% endif %}
                         {% endif %}
-                    </small>
+                        </small>
                     </br>
                 </div>
-            
-            
+
 
                 <!-- Comments Section -->
                 <div class="card-body">
@@ -133,47 +91,34 @@
                                 </div>
                             </div>
                         </form>
-                        <!-- Display Comments -->
+                        <!-- Display Comments Section -->
                         <div class="container content-center m-2"
-                        {% if not post.postComment.all %}
-                            style="display: none;"
-                        {% endif %}>
-                            <div class="text-muted-custom">
-                                {% for comment in post.postComment.all reversed %}
+                            {% if not post.postComment.all %}
+                                style="display: none;"
+                            {% endif %}>
+                            <div class="comment" id="comment-{{ comment.id }}">
+                                <div class="text-muted-custom">
+                                    {% for comment in post.postComment.all reversed %}
                                         <div class="d-flex w-100 justify-content-between">
                                             <small class="text-muted-custom">Posted by: <strong>{{ comment.author }}</strong></small>
                                             <small class="text-muted-custom">{{ comment.created_at|date:'M. d, Y, P' }}</small>
                                         </div>
-                                    <p class="mb-1">{{ comment.message }}</p>
-                                    <small class="text-muted" data-created="{{ comment.created_at|date:'U' }}"></small>
-                                {% endfor %}
+                                        <p class="mb-1 comment-message">{{ comment.message }}</p>
+                                        <small class="text-muted" data-created="{{ comment.created_at|date:'U' }}"></small>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+
             </div>
         {% endfor %}
     </div>
-
-    <!-- Paginator -->
-    <div class="container">
-        <nav aria-label="PageNavigator">
-            <ul class="pagination d-flex justify-content-center">
-                {% if pagePosts.has_previous %}    
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ pagePosts.previous_page_number }}">
-                        Previous
-                    </a>
-                </li>
-                {% endif %}
-                {% if pagePosts.has_next %}    
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ pagePosts.next_page_number }}">
-                        Next
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
+    {% if posts|length == 0 %}
+    <div class="text-center mt-4">
+        <p>No results found.</p>
     </div>
-{% endblock %}
+    {% endif %}
+</div>{% endblock %}

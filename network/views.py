@@ -15,8 +15,10 @@ import json
 from .models import User, Like, Post, Comment, Follow
 
 
+from django.db.models import Count
+
 def index(request):
-    posts = Post.objects.all().order_by("created_at").reverse()
+    posts = Post.objects.all().order_by("-created_at")
     
     # Pagination
     paginator = Paginator(posts, 10)
@@ -24,15 +26,14 @@ def index(request):
     pagePosts = paginator.get_page(pageNumber)
     
     whoYouLiked = []
-
+    
     if request.user.is_authenticated:
         likes = Like.objects.filter(user=request.user)
         whoYouLiked = [like.post.id for like in likes]
-
+        
     return render(request, "network/index.html", {
-        "posts": posts,
+        "pagePosts": pagePosts,
         "whoYouLiked": whoYouLiked,
-        "pagePosts": pagePosts
     })
 
 
@@ -129,13 +130,6 @@ def posts(request, id):
         "whoYouLiked": whoYouLiked
     })
     
-    
-def like(request, id):
-    if request.method == "POST":
-        like = request.POST["addLike"]
-        
-        return like
-
 
 def profile(request, user_id):
     user = User.objects.get(pk=user_id)
@@ -263,3 +257,46 @@ def addLike(request, post_id):
 
     likes_count += 1  # Increment the likes_count
     return JsonResponse({"message": "Like added", "likes_count": likes_count})
+
+@login_required
+def addComment(request, id):
+    current_user = request.user
+    postData = Post.objects.get(pk=id)
+    message = request.POST["newComment"]
+    
+    newComment = Comment(
+        author=current_user,
+        post=postData,
+        message=message,
+        created_at=timezone.now()
+    )
+    
+    newComment.save()
+    
+    return HttpResponseRedirect(reverse("index"))
+
+def search(request):
+    query = request.GET.get('q')
+
+    if query:
+        # Search for posts with content that contains the query
+        posts_with_matching_content = Post.objects.filter(content__icontains=query)
+        
+        # Search for posts with matching comments
+        matching_comments = Comment.objects.filter(message__icontains=query)
+        post_ids_with_matching_comments = matching_comments.values_list('post', flat=True)
+        posts_with_matching_comments = Post.objects.filter(pk__in=post_ids_with_matching_comments)
+        
+        # Search for users with usernames that contain the query
+        users_with_matching_username = User.objects.filter(username__icontains=query)
+        user_posts = Post.objects.filter(creator__in=users_with_matching_username)
+        
+        # Combine the search results
+        posts = (posts_with_matching_content | posts_with_matching_comments | user_posts).distinct()
+    else:
+        posts = []
+
+    return render(request, "network/search_results.html", {
+        "posts": posts,
+        "query": query
+    })

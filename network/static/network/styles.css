@@ -1,28 +1,34 @@
 /* Body Styling */
 body {
-    background-color: #15202b; /* Twitter dark blue background color */
+    background-color: #15202b;
     color: white;
     font-family: Arial, sans-serif;
 }
 
+/* Logo image */
+.image-logo {
+    width: 200px;
+    height: auto;
+}
+
 /* Card Styling */
 .card {
-    background-color: #294663; /* Twitter dark blue background color */
-    color: white; /* White text color for cards */
-    border: none; /* Remove default border */
-    border-radius: 10px; /* Rounded corners for cards */
-    box-shadow: 0 4px 8px #0000009c; /* Add a subtle shadow */
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Add transition for shadow */
+    background-color: #294663;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px #0000009c;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .card:hover {
-    box-shadow: 0 0px 18px #3b5c7e; /* Increase shadow on hover */
+    box-shadow: 0 0px 18px #3b5c7e;
 }
 
 .card-header {
-    background-color: #1da1f2; /* Twitter blue color for card header */
-    color: white; /* White text color for card header */
-    border-bottom: none; /* Remove border at the bottom of card header */
+    background-color: #1da1f2;
+    color: white;
+    border-bottom: none;
 }
 
 /* @username control */
@@ -33,37 +39,39 @@ body {
 }
 
 .card-header a:hover {
-    transform: scale(1.2); /* Zoom in to 130% on hover */
+    transform: scale(1.2); /* Zoom in to x% on hover */
     color: white;
 }
 
 .card-footer {
     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
-    background-color: #15202b; /* Twitter dark blue background color for card footer */
-    color: white; /* White text color for card footer */
-    border-top: none; /* Remove border at the top of card footer */
+    background-color: #15202b;
+    color: white;
+    border-top: none;
+    font-size: 12px;
+    font-style: italic;
 }
 
 /* Modal Styling */
 .modal-content {
-    background-color: #294663; /* Twitter dark blue background color for modal */
-    color: white; /* White text color for modal content */
-    border: none; /* Remove border around modal content */
+    background-color: #294663;
+    color: white;
+    border: none;
 }
 
 .modal-header {
-    background-color: #1da1f2; /* Twitter dark blue background color for modal header */
-    color: white; /* White text color for modal header */
-    border-bottom: none; /* Remove border at the bottom of modal header */
+    background-color: #1da1f2;
+    color: white;
+    border-bottom: none;
 }
 
 .modal-body {
-    background-color: #294663; /* Twitter dark blue background color for modal body */
+    background-color: #294663;
 }
 
 .modal-footer {
-    background-color: #294663; /* Twitter dark blue background color for modal footer */
-    border-top: none; /* Remove border at the top of modal footer */
+    background-color: #294663;
+    border-top: none;
 }
 
 .close-modal {
@@ -72,34 +80,35 @@ body {
 
 /* Horizontal Rule Styling */
 .hr-custom-style {
-    color: #949aa0; /* Custom text color for the hr line */
+    color: #949aa0;
 }
 
 /* Textarea Styling */
 textarea.form-control {
-    background-color: #3c658f; /* Twitter dark blue background color for textarea */
-    color: white; /* White text color for textarea */
-    border: none; /* Remove border around textarea */
-    border-radius: 5px; /* Rounded corners for textarea */
-    box-shadow: 0 4px 8px #0000009c; /* Add a subtle shadow */
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Add transition for shadow */
+    background-color: #3c658f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px #3c658f;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 textarea.form-control:focus {
-    background-color: #3c658f; /* Twitter dark blue background color for textarea */
+    background-color: #3c658f;
     color: white;
-    box-shadow: 0 1px 18px #3b5c7e; /* Increase shadow on hover */
+    box-shadow: 0 1px 18px #3b5c7e;
 }
 
 textarea.form-control:hover {
-    background-color: #3c658f; /* Twitter dark blue background color for textarea */
+    background-color: #3c658f;
     color: white;
-    box-shadow: 0 0px 25px #3b5c7e; /* Increase shadow on hover */
+    box-shadow: 0 0px 25px #3b5c7e;
 }
 
 /* Navbar Styling */
 .navbar {
-    background-color: #1da1f2; /* Twitter blue color */
+    background-color: #1da1f2;
+    box-shadow: 0 10px 40px #f3c7026e;
 }
 
 .navbar-brand {
@@ -116,7 +125,7 @@ textarea.form-control:hover {
 
 .navbar-nav .nav-item {
     white-space: nowrap;
-    margin-right: 10px; /* Add some spacing between items */
+    margin-right: 10px;
 }
 
 .navbar-text {
@@ -138,7 +147,7 @@ textarea.form-control:hover {
 }
 
 .btn-primary:hover {
-    background-color: #0c88c7; /* Slightly darker blue on hover */
+    background-color: #0c88c7;
 }
 
 .btn-link {
@@ -170,7 +179,7 @@ textarea.form-control:hover {
 }
 
 .jump-icon:hover {
-    transform: translateY(-5px); /* Adjust the value to control the jump height */
+    transform: translateY(-5px); /* Jump height */
 }
 
 /* Like Button Styling */
@@ -194,7 +203,43 @@ textarea.form-control:hover {
 }
 
 /* Muted text */
-
 .text-muted-custom {
     color: white;
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* In your CSS file */
+.custom-textarea {
+    width: 50%;
+}
+
+mark.a0 {
+    color: black;
+    padding: 5px;
+    background: greenyellow;
+}
+
+mark.a1 {
+    color: black;
+    padding: 5px;
+    background: cyan;
+}
+
+mark.a2 {
+    color: black;
+    padding: 5px;
+    background: red;
+}
+
+mark.a3 {
+    color: white;
+    padding: 5px;
+    background: green;
+}
+
+mark.a4 {
+    color: black;
+    padding: 5px;
+    background: pink;
 }

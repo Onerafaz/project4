@@ -16,4 +16,7 @@ urlpatterns = [
     path("edit/<int:post_id>", views.edit, name="edit"),
     path("removelike/<int:post_id>", views.removeLike, name="removelike"),
     path("addlike/<int:post_id>", views.addLike, name="addlike"),
+    path("addNewComment/<int:id>", views.addComment, name="addComment"),
+    path('search/', views.search, name='search'),
+
 ]
