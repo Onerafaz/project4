@@ -20,7 +20,7 @@ class CommentLike(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"User: {self.user} | Likes Comment: {self.comment}"
+        return f"User: {self.user} | Likes Comment: {self.comment.message} | ID: {self.comment.id} | Made by: {self.comment.author}"
 
     
 class Comment(models.Model):
@@ -31,7 +31,7 @@ class Comment(models.Model):
     likes = models.ManyToManyField(User, related_name="likedComments", through=CommentLike)
     
     def __str__(self):
-        return f"{self.author} commented on {self.post}"
+        return f"User: {self.author} | Commented on: {self.post.content} | Made by: {self.post.creator} | Created on: {self.post.created_at}"
     
     
 class Follow(models.Model):

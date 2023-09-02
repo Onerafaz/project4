@@ -337,6 +337,18 @@ def like_comment(request, comment_id):
 
 def search(request):
     query = request.GET.get('q')
+    
+    whoYouLikedPosts = []
+    whoYouLikedComments = []  # New list to store liked comments
+    
+    if request.user.is_authenticated:
+        # Get posts liked by the user
+        post_likes = Like.objects.filter(user=request.user)
+        whoYouLikedPosts = [like.post.id for like in post_likes]
+
+        # Get comments liked by the user
+        comment_likes = CommentLike.objects.filter(user=request.user)
+        whoYouLikedComments = [like.comment.id for like in comment_likes]
 
     if query:
         # Search for posts with content that contains the query
@@ -358,5 +370,7 @@ def search(request):
 
     return render(request, "network/search_results.html", {
         "posts": posts,
-        "query": query
+        "query": query,
+        "whoYouLiked": whoYouLikedPosts,
+        "whoYouLikedComments": whoYouLikedComments,  # Include liked comments in the context
     })
