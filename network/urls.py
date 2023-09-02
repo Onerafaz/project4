@@ -18,5 +18,7 @@ urlpatterns = [
     path("addlike/<int:post_id>", views.addLike, name="addlike"),
     path("addNewComment/<int:id>", views.addComment, name="addComment"),
     path('search/', views.search, name='search'),
+    path('addCommentLike/<int:comment_id>/', views.like_comment, name='addCommentLike'),
+    path('removeCommentlike/<int:comment_id>/', views.like_comment, name='removeCommentLike'),
 
 ]

@@ -141,11 +141,39 @@
                             <div class="text-muted-custom">
                                 {% for comment in post.postComment.all reversed %}
                                         <div class="d-flex w-100 justify-content-between">
-                                            <small class="text-muted-custom">Posted by: <strong>{{ comment.author }}</strong></small>
+                                            <small class="text-muted-custom">
+                                                Posted by: 
+                                                <strong>
+                                                    <a href="{% url 'profile' user_id=post.creator.id %}"
+                                                        class="comment-username">
+                                                        @{{ comment.author }}
+                                                    </a>
+                                                </strong>
+                                            </small>
                                             <small class="text-muted-custom">{{ comment.created_at|date:'M. d, Y, P' }}</small>
                                         </div>
                                     <p class="mb-1">{{ comment.message }}</p>
                                     <small class="text-muted" data-created="{{ comment.created_at|date:'U' }}"></small>
+                                    <!-- Comments Likes -->
+                                    <small class="text-muted-custom">
+                                        Likes: <span id="comment-likes-count-{{ comment.id }}" class="comment-likes-count{{ comment.id }}"><strong>{{ comment.likes.count }}</strong></span>
+                                        {% if user.is_authenticated %}
+                                            {% if user != comment.author %}
+                                                <a
+                                                    onclick="commentLike({{ comment.id }})"
+                                                    id="comment-like-{{ comment.id }}"
+                                                    class="btn btn-link comment-like-button {% if comment.id in whoYouLikedComments %}liked{% endif %}"
+                                                    data-comment-liked="{% if comment.id in whoYouLikedComments %}true{% else %}false{% endif %}"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                                                        <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"></path>
+                                                    </svg>
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </small>
+                                                                        
+                                    <hr class="hr-custom-style">
                                 {% endfor %}
                             </div>
                         </div>

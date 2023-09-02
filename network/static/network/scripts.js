@@ -14,11 +14,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 
-// JavaScript to handle the search functionality
+// JavaScript to handle the search functionality on click
 document.getElementById("search-button").addEventListener("click", function() {
     performSearch();
 });
 
+// JavaScript to handle the search functionality on key press "Enter"
 document.getElementById("search-input").addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
         performSearch();
@@ -31,17 +32,19 @@ function performSearch() {
     highlight(searchQuery);
 }
 
-function highlight(param) {
-    var comments = document.querySelectorAll(".comment-message"); // Target the comment message elements
-    comments.forEach(comment => {
-        var ob = new Mark(comment);
-        ob.unmark();
-        ob.mark(param, { className: 'highlighted' });
+document.addEventListener("DOMContentLoaded", function() {
+    const searchQuery = decodeURIComponent(window.location.search.replace("?q=", ""));
+    highlight(searchQuery);
+});
+
+function highlight(query) {
+    // Use Mark.js to highlight the query
+    const context = document.querySelector(".search-post");
+    const mark = new Mark(context);
+    mark.unmark().mark(query, {
+        exclude: ["button", "input"] // Exclude buttons and input elements from the highlight
     });
 }
-
-
-
 
 // Handle the edit post and hide modal refreshing HTML asynchronously
 function getCookie(name) {
@@ -102,8 +105,8 @@ function postLike(postId) {
         fetch(endpoint)
             .then(response => response.json())
             .then(result => {
-                console.log(result.message);
-                console.log('Likes count from server:', result.likes_count);
+                // console.log(result.message);
+                // console.log('Likes count from server:', result.likes_count);
 
                 btn.setAttribute('data-liked', !isLiked);
                 btn.classList.toggle('liked');
@@ -120,3 +123,69 @@ function postLike(postId) {
             });
     }
 }
+
+
+// Function to handle the comment like button click
+function commentLike(commentId) {
+    // Try to get the button element by ID
+    const btn = document.getElementById(`comment-like-${commentId}`);
+
+    // Check if the button element exists
+    if (btn) {
+        // Log the button element and its attributes for debugging
+        // console.log('Button element:', btn);
+        
+        // Get the 'data-comment-liked' attribute
+        const isLiked = btn.getAttribute('data-comment-liked') === 'true';
+
+        if (!btn.classList.contains('processing')) {
+            btn.classList.add('processing');
+
+            const endpoint = isLiked ? `/addCommentLike/${commentId}` : `/removeCommentlike/${commentId}`;
+
+            fetch(endpoint)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    // console.log(result.message);
+                    // console.log('Likes count from server:', result.likes_count);
+
+                    btn.setAttribute('data-comment-liked', !isLiked);
+                    btn.classList.toggle('liked');
+
+                    // Update likes count in the HTML
+                    updateCommentLikesCount(commentId, result.likes_count);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    btn.classList.remove('processing');
+                });
+        }
+    }
+}
+
+// Function to update the comment likes count in the HTML
+function updateCommentLikesCount(commentId, likesCount) {
+    const likesCountElement = document.getElementById(`comment-likes-count-${commentId}`);
+    if (likesCountElement) {
+        const strongElement = likesCountElement.querySelector('strong');
+        if (strongElement) {
+            strongElement.textContent = likesCount;
+        }
+    }
+}
+
+// Example usage:
+// Attach a click event listener to your comment like buttons
+document.querySelectorAll('.comment-like-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const commentId = button.dataset.commentId;
+        commentLike(commentId);
+    });
+});

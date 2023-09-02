@@ -14,12 +14,21 @@ class Post(models.Model):
     def __str__(self):
         return f"Post {self.id} created by {self.creator} on {self.created_at.strftime('%d %b %Y %H:%M:%S')}"
 
+
+class CommentLike(models.Model):
+    comment = models.ForeignKey("Comment", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"User: {self.user} | Likes Comment: {self.comment}"
+
     
 class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="userComment")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, blank=True, null=True, related_name="postComment")
     message = models.CharField(max_length=200)
     created_at = models.DateTimeField(default=timezone.now)
+    likes = models.ManyToManyField(User, related_name="likedComments", through=CommentLike)
     
     def __str__(self):
         return f"{self.author} commented on {self.post}"
@@ -41,4 +50,3 @@ class Like(models.Model):
         return f"User: {self.user} | Likes: {self.post}"
     
 
-    

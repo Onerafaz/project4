@@ -35,7 +35,7 @@ body {
 .card-header a {
     display: inline-block; /* Convert the <a> tag to a block-level element */
     color: black;
-    transition: transform 0.4s ease-in-out, color 0.4s ease-in-out;
+    transition: transform 0.4s ease-in-out;
 }
 
 .card-header a:hover {
@@ -93,16 +93,16 @@ textarea.form-control {
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
-textarea.form-control:focus {
-    background-color: #3c658f;
-    color: white;
-    box-shadow: 0 1px 18px #3b5c7e;
-}
-
 textarea.form-control:hover {
     background-color: #3c658f;
     color: white;
-    box-shadow: 0 0px 25px #3b5c7e;
+    box-shadow: 0 0px 18px #3b5c7e;
+}
+
+textarea.form-control:focus {
+    background-color: #3c658f;
+    color: white;
+    box-shadow: 0 0px 18px #3b5c7e;
 }
 
 /* Navbar Styling */
@@ -115,6 +115,10 @@ textarea.form-control:hover {
     color: white;
     font-weight: bold;
     font-size: 1.5rem;
+}
+
+.navbar-toggler {
+    z-index: 3;
 }
 
 .navbar-nav {
@@ -135,6 +139,10 @@ textarea.form-control:hover {
 /* Input Group Styling */
 .input-group-wrapper {
     max-width: 250px;
+}
+
+.input-group #search-input {
+    max-width: 50%;
 }
 
 /* Button Styling */
@@ -209,37 +217,23 @@ textarea.form-control:hover {
     font-style: italic;
 }
 
+/* @username control */
+.text-muted-custom .comment-username {
+    display: inline-block; /* Convert the <a> tag to a block-level element */
+    color: #1da1f2;
+    transition: transform 0.4s ease-in-out, color 0.4s ease-in-out;
+}
+
+.text-muted-custom .comment-username:hover {
+    transform: scale(1.05); /* Zoom in to x% on hover */
+    color: white;
+}
+
 /* In your CSS file */
 .custom-textarea {
     width: 50%;
 }
 
-mark.a0 {
-    color: black;
-    padding: 5px;
-    background: greenyellow;
-}
-
-mark.a1 {
-    color: black;
-    padding: 5px;
-    background: cyan;
-}
-
-mark.a2 {
-    color: black;
-    padding: 5px;
-    background: red;
-}
-
-mark.a3 {
-    color: white;
-    padding: 5px;
-    background: green;
-}
-
-mark.a4 {
-    color: black;
-    padding: 5px;
-    background: pink;
+.highlighted {
+    background-color: yellow;
 }

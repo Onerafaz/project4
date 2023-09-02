@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -12,7 +12,7 @@ from django.http import JsonResponse
 import json
 
 
-from .models import User, Like, Post, Comment, Follow
+from .models import User, Like, Post, Comment, Follow, CommentLike
 
 
 from django.db.models import Count
@@ -25,15 +25,22 @@ def index(request):
     pageNumber = request.GET.get('page')
     pagePosts = paginator.get_page(pageNumber)
     
-    whoYouLiked = []
+    whoYouLikedPosts = []
+    whoYouLikedComments = []  # New list to store liked comments
     
     if request.user.is_authenticated:
-        likes = Like.objects.filter(user=request.user)
-        whoYouLiked = [like.post.id for like in likes]
+        # Get posts liked by the user
+        post_likes = Like.objects.filter(user=request.user)
+        whoYouLikedPosts = [like.post.id for like in post_likes]
+
+        # Get comments liked by the user
+        comment_likes = CommentLike.objects.filter(user=request.user)
+        whoYouLikedComments = [like.comment.id for like in comment_likes]
         
     return render(request, "network/index.html", {
         "pagePosts": pagePosts,
-        "whoYouLiked": whoYouLiked,
+        "whoYouLiked": whoYouLikedPosts,
+        "whoYouLikedComments": whoYouLikedComments,  # Include liked comments in the context
     })
 
 
@@ -153,6 +160,19 @@ def profile(request, user_id):
             isFollowing = False
     except:
         isFollowing = False
+        
+        
+    whoYouLikedPosts = []
+    whoYouLikedComments = []  # New list to store liked comments
+
+    if request.user.is_authenticated:
+        # Get posts liked by the user
+        post_likes = Like.objects.filter(user=request.user)
+        whoYouLikedPosts = [like.post.id for like in post_likes]
+
+        # Get comments liked by the user
+        comment_likes = CommentLike.objects.filter(user=request.user)
+        whoYouLikedComments = [like.comment.id for like in comment_likes]
     
     return render(request, "network/profile.html", {
         "posts": posts,
@@ -161,7 +181,9 @@ def profile(request, user_id):
         "following": following,
         "followers": followers,
         "isFollowing": isFollowing,
-        "user_profile": user
+        "user_profile": user,
+        "whoYouLiked": whoYouLikedPosts,
+        "whoYouLikedComments": whoYouLikedComments,  # Include liked comments in the context
     })
 
 
@@ -173,7 +195,9 @@ def follow(request):
     f = Follow(user=current_user, user_follower=userfollowData)
     f.save()
     user_id =userfollowData.id
+    
     return HttpResponseRedirect(reverse(profile, kwargs={"user_id": user_id}))
+
 
 @login_required
 def unfollow(request):
@@ -183,6 +207,7 @@ def unfollow(request):
     f = Follow.objects.get(user=current_user, user_follower=userfollowData)
     f.delete()
     user_id =userfollowData.id
+    
     return HttpResponseRedirect(reverse(profile, kwargs={"user_id": user_id}))
 
 
@@ -193,11 +218,17 @@ def following(request):
     
     followingPosts = []
     
-    whoYouLiked = []
-
+    whoYouLikedPosts = []
+    whoYouLikedComments = []  # New list to store liked comments
+    
     if request.user.is_authenticated:
-        likes = Like.objects.filter(user=request.user)
-        whoYouLiked = [like.post.id for like in likes]
+        # Get posts liked by the user
+        post_likes = Like.objects.filter(user=request.user)
+        whoYouLikedPosts = [like.post.id for like in post_likes]
+
+        # Get comments liked by the user
+        comment_likes = CommentLike.objects.filter(user=request.user)
+        whoYouLikedComments = [like.comment.id for like in comment_likes]
     
     for post in allPosts:
         for person in followingPeople:
@@ -211,7 +242,8 @@ def following(request):
     
     return render(request, "network/following.html", {
         "pagePosts": pagePosts,
-        "whoYouLiked": whoYouLiked,        
+        "whoYouLiked": whoYouLikedPosts,
+        "whoYouLikedComments": whoYouLikedComments,  # Include liked comments in the context        
     })
 
    
@@ -258,6 +290,7 @@ def addLike(request, post_id):
     likes_count += 1  # Increment the likes_count
     return JsonResponse({"message": "Like added", "likes_count": likes_count})
 
+
 @login_required
 def addComment(request, id):
     current_user = request.user
@@ -274,6 +307,33 @@ def addComment(request, id):
     newComment.save()
     
     return HttpResponseRedirect(reverse("index"))
+
+
+@login_required
+def like_comment(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+    user = request.user
+
+    # Check if the user has already liked the comment
+    if user in comment.likes.all():
+        # If already liked, unlike it
+        CommentLike.objects.filter(comment=comment, user=user).delete()
+    else:
+        # Otherwise, add a like
+        CommentLike.objects.create(comment=comment, user=user)
+
+    # Get the updated likes count for the comment
+    likes_count = comment.likes.count()
+
+    # Prepare the response data
+    response_data = {
+        "message": "Comment liked/unliked",
+        "likes_count": likes_count,
+    }
+
+    # Return the JSON response
+    return JsonResponse(response_data)
+
 
 def search(request):
     query = request.GET.get('q')
