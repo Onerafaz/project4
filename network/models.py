@@ -12,7 +12,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"Post {self.id} created by {self.creator} on {self.created_at.strftime('%d %b %Y %H:%M:%S')}"
+        return f"Post {self.id} | Created by {self.creator} | On: {self.created_at.strftime('%d %b %Y %H:%M:%S')}"
 
 
 class CommentLike(models.Model):
