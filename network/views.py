@@ -2,12 +2,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.http import JsonResponse
 import json
 
@@ -15,7 +14,6 @@ import json
 from .models import User, Like, Post, Comment, Follow, CommentLike
 
 
-from django.db.models import Count
 
 def index(request):
     posts = Post.objects.all().order_by("-created_at")
@@ -26,7 +24,7 @@ def index(request):
     pagePosts = paginator.get_page(pageNumber)
     
     whoYouLikedPosts = []
-    whoYouLikedComments = []  # New list to store liked comments
+    whoYouLikedComments = []
     
     if request.user.is_authenticated:
         # Get posts liked by the user
@@ -40,7 +38,7 @@ def index(request):
     return render(request, "network/index.html", {
         "pagePosts": pagePosts,
         "whoYouLiked": whoYouLikedPosts,
-        "whoYouLikedComments": whoYouLikedComments,  # Include liked comments in the context
+        "whoYouLikedComments": whoYouLikedComments,
     })
 
 
@@ -94,6 +92,7 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
 
 @login_required
 def new_post(request):
@@ -163,7 +162,7 @@ def profile(request, user_id):
         
         
     whoYouLikedPosts = []
-    whoYouLikedComments = []  # New list to store liked comments
+    whoYouLikedComments = []
 
     if request.user.is_authenticated:
         # Get posts liked by the user
@@ -183,7 +182,7 @@ def profile(request, user_id):
         "isFollowing": isFollowing,
         "user_profile": user,
         "whoYouLiked": whoYouLikedPosts,
-        "whoYouLikedComments": whoYouLikedComments,  # Include liked comments in the context
+        "whoYouLikedComments": whoYouLikedComments,
     })
 
 
@@ -219,7 +218,7 @@ def following(request):
     followingPosts = []
     
     whoYouLikedPosts = []
-    whoYouLikedComments = []  # New list to store liked comments
+    whoYouLikedComments = []
     
     if request.user.is_authenticated:
         # Get posts liked by the user
@@ -243,7 +242,7 @@ def following(request):
     return render(request, "network/following.html", {
         "pagePosts": pagePosts,
         "whoYouLiked": whoYouLikedPosts,
-        "whoYouLikedComments": whoYouLikedComments,  # Include liked comments in the context        
+        "whoYouLikedComments": whoYouLikedComments,       
     })
 
    
@@ -260,7 +259,7 @@ def edit(request, post_id):
 def removeLike(request, post_id):
     post = Post.objects.get(pk=post_id)
     user = request.user
-    likes_count = Like.objects.filter(post=post).count()  # Corrected variable name
+    likes_count = Like.objects.filter(post=post).count()
 
     try:
         like = Like.objects.get(user=user, post=post)
@@ -297,6 +296,7 @@ def addComment(request, id):
     postData = Post.objects.get(pk=id)
     message = request.POST["newComment"]
     
+    # Collect comment info to store
     newComment = Comment(
         author=current_user,
         post=postData,
@@ -304,6 +304,7 @@ def addComment(request, id):
         created_at=timezone.now()
     )
     
+    # Save the comment
     newComment.save()
     
     return HttpResponseRedirect(reverse("index"))
@@ -327,19 +328,19 @@ def like_comment(request, comment_id):
 
     # Prepare the response data
     response_data = {
-        "message": "Comment liked/unliked",
+        # "message": "Comment liked/unliked",
         "likes_count": likes_count,
     }
 
-    # Return the JSON response
     return JsonResponse(response_data)
 
 
 def search(request):
     query = request.GET.get('q')
     
+    # Pass the likes to the template
     whoYouLikedPosts = []
-    whoYouLikedComments = []  # New list to store liked comments
+    whoYouLikedComments = []
     
     if request.user.is_authenticated:
         # Get posts liked by the user
@@ -372,5 +373,5 @@ def search(request):
         "posts": posts,
         "query": query,
         "whoYouLiked": whoYouLikedPosts,
-        "whoYouLikedComments": whoYouLikedComments,  # Include liked comments in the context
+        "whoYouLikedComments": whoYouLikedComments,
     })
