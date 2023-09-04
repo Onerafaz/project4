@@ -124,7 +124,6 @@ function postLike(postId) {
     }
 }
 
-
 // Function to handle the comment like button click
 function commentLike(commentId) {
     // Try to get the button element by ID
@@ -170,6 +169,13 @@ function commentLike(commentId) {
     }
 }
 
+document.querySelectorAll('.comment-like-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const commentId = button.dataset.commentId;
+        commentLike(commentId);
+    });
+});
+
 // Function to update the comment likes count in the HTML
 function updateCommentLikesCount(commentId, likesCount) {
     const likesCountElement = document.getElementById(`comment-likes-count-${commentId}`);
@@ -181,11 +187,3 @@ function updateCommentLikesCount(commentId, likesCount) {
     }
 }
 
-// Example usage:
-// Attach a click event listener to your comment like buttons
-document.querySelectorAll('.comment-like-button').forEach(button => {
-    button.addEventListener('click', () => {
-        const commentId = button.dataset.commentId;
-        commentLike(commentId);
-    });
-});
